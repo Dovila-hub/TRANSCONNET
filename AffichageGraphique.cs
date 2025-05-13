@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Diagnostics;
+using System.Threading;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Linq.Expressions;
+using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 
 namespace TRANSCONNET
 {
@@ -11,41 +12,41 @@ namespace TRANSCONNET
     {
         #region Champs
         public Manager manager;
-        public LectureFichier fileExplorerSalarie; //modifie les salariés
-        public LectureFichier fileExplorerClient;// modifie les clients
-        public LectureFichier fileExplorerDistances; // permet de lire le fichier distances_villes_france.csv
-        public LectureFichier fileExplorerCommandes; // permet de lire le fichier commandes.csv
-        bool display = false; // permet d'afficher l'organigramme de l'entreprise
-        bool main = true;
+        public LireFichier fileExplorer; // explorateur de fichier permettant de modifier la sauvegarde des salariés
+        public LireFichier fileExplorerClient; // explorateur de fichier permettant de modifier la sauvegarde des clients
+        public LireFichier fileExplorerDistances; // explorateur de fichier permettant de lire distances.csv
+        public LireFichier fileExplorerCommandes; // explorateur de fichier permettant de lire commandes.csv
+        bool display = false; // gère l'affichage de l'organigramme
+        bool main = true; // Gère si l'animation doit continuer
         #endregion
 
-        #region Constructeurrs
+        #region Constructeurs
         public AffichageGraphique(string pathSalaries, string pathClients, string pathDistances, string pathCommandes, Manager manager)
-        { 
-            this.manager = manager;
-            this.fileExplorerSalarie = new LectureFichier(manager, pathSalaries);
-            this.fileExplorerClient = new LectureFichier(manager, pathClients);
-            this.fileExplorerDistances = new LectureFichier(manager, pathDistances);
-            this.fileExplorerCommandes = new LectureFichier(manager, pathCommandes);
-        }
-        #endregion 
-        #region AffichageTransconnect
-        void ExceptionManager(Ui func)
         {
-            try
-            {
-                func();
-            }
+            this.manager = manager;
+            this.fileExplorer = new LireFichier(manager, pathSalaries);
+            this.fileExplorerClient = new LireFichier(manager, pathClients);
+            this.fileExplorerDistances = new LireFichier(manager, pathDistances);
+            this.fileExplorerCommandes = new LireFichier(manager, pathCommandes);
+        }
+        #endregion
+
+        #region Méthodes
+
+        #region AffichageGLobale
+        void ExceptionManager(Ui func) //  si une erreur est détecté, il relance la méthode
+        {
+            try { func(); }
             catch (Exception e)
             {
                 main = false;
                 Console.WriteLine(e.Message);
-                Console.WriteLine("Veillez reessayer");
-                Console.WriteLine("Appuyer sur une touche");
+                Console.WriteLine("Une erreur est survenue, veuillez vérifier vos réponses");
+                Console.WriteLine("=========");
+                Console.WriteLine("Appuyez sur une touche ...");
                 Console.ReadKey();
                 Console.Clear();
                 ExceptionManager(Affichage);
-
             }
         }
         int GoodValue(int a, int b) // vérifie la valeur fournie en entrée
@@ -269,7 +270,7 @@ namespace TRANSCONNET
                 switch (l)
                 {
                     case 1: Console.WriteLine("Entrez le nouveau nom : "); cible.Nom = Console.ReadLine(); fileExplorerClient.Modify(cible, 0, cible.Nom); break;
-                    case 2: Console.WriteLine("Entrez la nouvelle adresse : "); cible.Adresse = Console.ReadLine(); fileExplorerClient.Modify(cible, 3, cible.Adresse); break;
+                    case 2: Console.WriteLine("Entrez la nouvelle adresse : "); cible.AdressePostale = Console.ReadLine(); fileExplorerClient.Modify(cible, 3, cible.AdressePostale); break;
                     case 3: Console.WriteLine("Entrez la nouvelle adresse mail : "); cible.AdresseMail = Console.ReadLine(); fileExplorerClient.Modify(cible, 4, cible.AdresseMail); break;
                     case 4: Console.WriteLine("Entrez le numéro de téléphone : "); cible.Telephone = int.Parse(Console.ReadLine()); fileExplorerClient.Modify(cible, 5, cible.Telephone.ToString()); break;
                 }
@@ -447,7 +448,7 @@ namespace TRANSCONNET
                 manager.Salaries.Add(sal);
                 if (manager.SalariesHierarchie == null)
                 {
-                    manager.SalariesHierarchie = new SalariesArbre(sal);
+                    manager.SalariesHierarchie = new ArbreSalarie(sal);
                     fileExplorer.Add(sal, "TransConnect", "");
                 }
                 else
@@ -496,7 +497,7 @@ namespace TRANSCONNET
                             Console.WriteLine("Nom modifié");
                             break;
                         }
-                    case 2: Console.WriteLine("Entrez la nouvelle adresse : "); sal.Adresse = Console.ReadLine(); fileExplorer.Modify(sal, 3, sal.Adresse); break;
+                    case 2: Console.WriteLine("Entrez la nouvelle adresse : "); sal.AdressePostale = Console.ReadLine(); fileExplorer.Modify(sal, 3, sal.AdressePostale); break;
                     case 3: Console.WriteLine("Entrez le nouveau mail : "); sal.AdresseMail = Console.ReadLine(); fileExplorer.Modify(sal, 4, sal.AdresseMail); break;
                     case 4: Console.WriteLine("Entrez le nouveau numéro de téléphone : "); sal.Telephone = int.Parse(Console.ReadLine()); fileExplorer.Modify(sal, 5, sal.Telephone.ToString()); break;
                     case 5: Console.WriteLine("Entrez le nouveau poste : "); sal.Poste = Console.ReadLine(); fileExplorer.Modify(sal, 8, sal.Poste); break;
@@ -1398,7 +1399,6 @@ namespace TRANSCONNET
             return i;
         }
         #endregion
+        #endregion
     }
-
-
 }

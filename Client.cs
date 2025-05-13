@@ -23,6 +23,12 @@ namespace TRANSCONNET
             this.commandes = new List< Commande>();
         }
         #endregion
+        #region getter-setter
+        public List<Commande> Commandes
+        {
+            get { return commandes; }
+        }
+        #endregion
         #region Ajout et Retrait de Commande
         public void AjouteCommande( Commande command)
         {
@@ -72,7 +78,7 @@ namespace TRANSCONNET
             Console.WriteLine(this);
         }
         #endregion
-        public int PrixCommandes() // Renvoie la somma totale payé par le client 
+        public int PrixCommandes() // Renvoie la somme totale payé par le client 
         {
             int prix = 0;
             foreach ( Commande com in commandes)
